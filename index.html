@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AeroPlan v2.0 PRO</title>
+  <title>AeroPlan v3.0 PRO</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     body { background-color: #0f172a; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    .glass-panel { background-color: #1e293b; border: 1px solid #334155; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+    .glass-panel { background-color: #1e293b; border: 1px solid #334155; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
     .input-field { width: 100%; background-color: #0f172a; border: 1px solid #334155; border-radius: 0.375rem; padding: 0.5rem; font-size: 0.875rem; color: #e2e8f0; font-family: monospace; transition: all 0.2s; }
     .input-field:focus { outline: none; border-color: #0ea5e9; box-shadow: 0 0 0 1px #0ea5e9; }
     .label-text { display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.25rem; font-family: monospace; }
@@ -20,10 +20,11 @@
   <header class="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-50">
     <div class="max-w-7xl mx-auto flex justify-between items-center">
       <div class="flex items-center space-x-2">
-        <h1 class="text-xl font-bold tracking-widest text-white">AEROPLAN <span class="text-xs text-sky-400 font-mono tracking-normal">v2.0 PRO</span></h1>
+        <i class="fa-solid fa-plane text-sky-400 text-xl"></i>
+        <h1 class="text-xl font-bold tracking-widest text-white">AEROPLAN <span class="text-xs text-sky-400 font-mono">v3.0 PRO</span></h1>
       </div>
       <div class="flex space-x-3 text-xs font-mono text-emerald-500">
-        <span><i class="fa-solid fa-database mr-1"></i>NavData Local</span>
+        <span><i class="fa-solid fa-database mr-1"></i>NavData Autocompleta</span>
         <span><i class="fa-solid fa-cloud-bolt mr-1"></i>NOAA Live</span>
       </div>
     </div>
@@ -63,7 +64,7 @@
           </div>
           <div>
             <label class="label-text">Alterno (Opcional)</label>
-            <input type="text" id="altnInput" value="MMTM" maxlength="4" placeholder="Ej: MMTM" class="input-field uppercase font-bold text-amber-300 text-center">
+            <input type="text" id="altnInput" value="" maxlength="4" placeholder="Ej: MMTM" class="input-field uppercase font-bold text-amber-300 text-center">
           </div>
         </div>
 
@@ -74,11 +75,11 @@
           </div>
           <div>
             <label class="label-text">Flujo Comb (GPH)</label>
-            <input type="number" id="burnInput" value="20" step="0.5" class="input-field">
+            <input type="number" id="burnInput" value="16" step="0.5" class="input-field">
           </div>
           <div>
             <label class="label-text">TAS (Kts)</label>
-            <input type="number" id="tasInput" value="200" class="input-field">
+            <input type="number" id="tasInput" value="160" class="input-field">
           </div>
           <div>
             <label class="label-text">Viento (+ Cola / - Frente)</label>
@@ -102,7 +103,7 @@
           Computar FPL y METAR
         </button>
       </form>
-      <!-- Contenedor de Alertas de Navegación -->
+      <!-- Contenedor de Alertas -->
       <div id="navError" class="hidden mt-4 text-center text-red-400 font-mono text-xs font-bold"></div>
     </section>
 
@@ -155,120 +156,10 @@
   </main>
 
   <script>
-    // Base de datos de aeropuertos 100% Offline para distancias (Añade los que necesites aquí)
+    // Base de datos de aeropuertos de México y frontera EE. UU.
     const AIRPORTS = {
-      "MMRX": { lat: 26.0089, lon: -98.2286 },
-      "MMMA": { lat: 25.7699, lon: -97.5252 },
-      "MMTM": { lat: 22.2964, lon: -97.8659 },
-      "MMMY": { lat: 25.7785, lon: -100.1069 },
-      "MMAN": { lat: 25.8656, lon: -100.2373 },
-      "MMMX": { lat: 19.4363, lon: -99.0721 },
-      "KMFE": { lat: 26.1758, lon: -98.2386 },
-      "KBRO": { lat: 25.9068, lon: -97.4259 },
-      "KDFW": { lat: 32.8998, lon: -97.0403 },
-      "KIAH": { lat: 29.9902, lon: -95.3368 }
-    };
-
-    function calcDistance(lat1, lon1, lat2, lon2) {
-      const R = 3440.065; // NM
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-                Math.sin(dLon/2) * Math.sin(dLon/2);
-      return Math.round(R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))));
-    }
-
-    async function fetchWX(icao, elementId) {
-      if(!icao) return;
-      document.getElementById(elementId).innerText = "Conectando con NOAA...";
-      try {
-        const res = await fetch(`https://aviationweather.gov/api/data/metar?ids=${icao}&format=json`);
-        const data = await res.json();
-        document.getElementById(elementId).innerText = (data && data.length > 0) ? data[0].rawOb : `No hay reporte reciente para ${icao}`;
-      } catch (e) {
-        document.getElementById(elementId).innerText = `Error conectando con API para ${icao}`;
-      }
-    }
-
-    document.getElementById('flightForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      const errorDiv = document.getElementById('navError');
-      errorDiv.classList.add('hidden');
-
-      const orig = document.getElementById('originInput').value.trim().toUpperCase();
-      const dest = document.getElementById('destInput').value.trim().toUpperCase();
-      const altn = document.getElementById('altnInput').value.trim().toUpperCase();
-      
-      const resMins = parseInt(document.getElementById('rulesInput').value);
-      const extraMins = parseInt(document.getElementById('extraMinInput').value) || 0;
-      const taxiGal = parseFloat(document.getElementById('taxiGalInput').value) || 0;
-      const tas = parseFloat(document.getElementById('tasInput').value) || 1;
-      const wind = parseFloat(document.getElementById('windInput').value) || 0;
-      const gph = parseFloat(document.getElementById('burnInput').value) || 1;
-
-      // Validar existencia en base de datos local
-      if (!AIRPORTS[orig]) return showError(`El origen ${orig} no está en la NavData interna.`);
-      if (!AIRPORTS[dest]) return showError(`El destino ${dest} no está en la NavData interna.`);
-      if (altn && !AIRPORTS[altn]) return showError(`El alterno ${altn} no está en la NavData interna.`);
-
-      // Cálculos Matemáticos
-      const gs = tas + wind;
-      if(gs <= 0) return showError("Viento de frente excede la TAS. GS Negativa.");
-
-      const distTrip = calcDistance(AIRPORTS[orig].lat, AIRPORTS[orig].lon, AIRPORTS[dest].lat, AIRPORTS[dest].lon);
-      const distAltn = altn ? calcDistance(AIRPORTS[dest].lat, AIRPORTS[dest].lon, AIRPORTS[altn].lat, AIRPORTS[altn].lon) : 0;
-      const distTotal = distTrip + distAltn;
-
-      const timeTrip = distTrip / gs;
-      const timeAltn = distAltn / gs;
-      const totalTimeHrs = timeTrip + timeAltn;
-      
-      const hrs = Math.floor(totalTimeHrs);
-      const mins = Math.round((totalTimeHrs - hrs) * 60);
-
-      // Consumos
-      const fuelTrip = timeTrip * gph;
-      const fuelAltn = timeAltn * gph;
-      const fuelRes = (resMins / 60) * gph;
-      const fuelExtra = (extraMins / 60) * gph;
-      const totalFuel = fuelTrip + fuelAltn + fuelRes + fuelExtra + taxiGal;
-
-      // Inyección a Interfaz
-      document.getElementById('resDist').innerText = distTotal;
-      document.getElementById('resGS').innerText = gs;
-      document.getElementById('resTime').innerText = `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
-      document.getElementById('resTotalFuel').innerText = totalFuel.toFixed(1);
-
-      document.getElementById('logTrip').innerText = `${fuelTrip.toFixed(1)} GAL`;
-      document.getElementById('logAltn').innerText = altn ? `${fuelAltn.toFixed(1)} GAL` : `0.0 GAL`;
-      document.getElementById('logResLabel').innerText = resMins;
-      document.getElementById('logReserve').innerText = `${fuelRes.toFixed(1)} GAL`;
-      document.getElementById('logExtLabel').innerText = extraMins;
-      document.getElementById('logExtra').innerText = `${fuelExtra.toFixed(1)} GAL`;
-      document.getElementById('logTaxi').innerText = `${taxiGal.toFixed(1)} GAL`;
-
-      // Etiquetas Clima
-      document.getElementById('lblOrig').innerText = orig;
-      document.getElementById('lblDest').innerText = dest;
-      fetchWX(orig, 'wxOrig');
-      fetchWX(dest, 'wxDest');
-
-      const boxAltn = document.getElementById('boxAltn');
-      if(altn) {
-        boxAltn.classList.remove('hidden');
-        document.getElementById('lblAltn').innerText = altn;
-        fetchWX(altn, 'wxAltn');
-      } else {
-        boxAltn.classList.add('hidden');
-      }
-
-      function showError(msg) {
-        errorDiv.innerText = msg;
-        errorDiv.classList.remove('hidden');
-      }
-    });
-  </script>
-</body>
-</html>
+      "MMRX": { lat: 26.0089, lon: -98.2286 }, // Reynosa (REX)
+      "MMMA": { lat: 25.7699, lon: -97.5252 }, // Matamoros (MAM) - Distancia REX-MAM: 41 NM
+      "MMTM": { lat: 22.2964, lon: -97.8659 }, // Tampico
+      "MMMY": { lat: 25.7785, lon: -100.1069 }, // Monterrey Escobedo
+      "MMAN": { lat: 25.8656, lon: -100.2373 }, // Monterrey Del Norte
