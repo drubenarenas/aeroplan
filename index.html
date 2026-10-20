@@ -3,293 +3,270 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AeroPlan Pro - FltPlan & Briefing</title>
+  <title>AeroPlan v2.0 PRO</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; }
-    .glass-panel { background: rgba(30, 41, 59, 0.95); border: 1px solid #334155; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); }
+    body { background-color: #0f172a; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .glass-panel { background-color: #1e293b; border: 1px solid #334155; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+    .input-field { width: 100%; background-color: #0f172a; border: 1px solid #334155; border-radius: 0.375rem; padding: 0.5rem; font-size: 0.875rem; color: #e2e8f0; font-family: monospace; transition: all 0.2s; }
+    .input-field:focus { outline: none; border-color: #0ea5e9; box-shadow: 0 0 0 1px #0ea5e9; }
+    .label-text { display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.25rem; font-family: monospace; }
   </style>
 </head>
-<body class="text-slate-200 min-h-screen">
+<body class="min-h-screen pb-10">
 
-  <header class="bg-slate-900 border-b border-slate-700 p-4 sticky top-0 z-50">
+  <!-- Header -->
+  <header class="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-50">
     <div class="max-w-7xl mx-auto flex justify-between items-center">
-      <div class="flex items-center space-x-3">
-        <i class="fa-solid fa-plane-navigation text-sky-500 text-2xl"></i>
-        <h1 class="text-xl font-bold tracking-widest text-white">AEROPLAN <span class="text-xs text-sky-500 font-mono">v2.0 PRO</span></h1>
+      <div class="flex items-center space-x-2">
+        <h1 class="text-xl font-bold tracking-widest text-white">AEROPLAN <span class="text-xs text-sky-400 font-mono tracking-normal">v2.0 PRO</span></h1>
       </div>
-      <div class="text-xs text-slate-400 font-mono flex flex-col items-end">
-        <span><i class="fa-solid fa-database text-emerald-500"></i> NOAA AWC Live NavData</span>
+      <div class="flex space-x-3 text-xs font-mono text-emerald-500">
+        <span><i class="fa-solid fa-database mr-1"></i>NavData Local</span>
+        <span><i class="fa-solid fa-cloud-bolt mr-1"></i>NOAA Live</span>
       </div>
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto p-4 grid grid-cols-1 xl:grid-cols-12 gap-6 mt-4">
+  <main class="max-w-7xl mx-auto p-4 space-y-6 mt-4">
 
-    <!-- FPL INPUT PANEL -->
-    <section class="xl:col-span-4 glass-panel rounded-xl p-5 h-fit">
-      <h2 class="text-md font-bold text-sky-400 border-b border-slate-600 pb-2 mb-4 uppercase flex items-center">
+    <!-- DATA INPUT PANEL -->
+    <section class="glass-panel p-5">
+      <h2 class="text-sm font-bold text-sky-400 border-b border-slate-700 pb-2 mb-4 uppercase tracking-wider flex items-center">
         <i class="fa-solid fa-route mr-2"></i> Flight Plan Data
       </h2>
-
-      <form id="fplForm" class="space-y-4">
-        <!-- Reglas y Aeronave -->
-        <div class="grid grid-cols-2 gap-3">
+      
+      <form id="flightForm" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-mono text-slate-400 mb-1">Reglas de Vuelo</label>
-            <select id="fltRules" class="w-full bg-slate-800 border border-slate-600 rounded p-2 text-sm font-bold focus:border-sky-500 focus:outline-none">
-              <option value="VFR">VFR (Reserva 30m)</option>
-              <option value="IFR">IFR (Reserva 45m)</option>
+            <label class="label-text">Reglas de Vuelo</label>
+            <select id="rulesInput" class="input-field cursor-pointer">
+              <option value="30">VFR (Reserva 30m)</option>
+              <option value="45" selected>IFR / Noche (Reserva 45m)</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-mono text-slate-400 mb-1">Aeronave (Type/Reg)</label>
-            <input type="text" id="acft" value="C210/N732GD" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm font-mono focus:border-sky-500 focus:outline-none uppercase">
+            <label class="label-text">Aeronave (Type/Reg)</label>
+            <input type="text" id="aircraftInput" value="C210/N732GD" class="input-field uppercase">
           </div>
         </div>
 
-        <!-- Ruta -->
-        <div class="grid grid-cols-3 gap-2">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label class="block text-xs font-mono text-slate-400 mb-1">Origen</label>
-            <input type="text" id="dep" value="MMRX" maxlength="4" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-center font-mono font-bold text-sky-300 focus:border-sky-500 uppercase" required>
+            <label class="label-text">Origen</label>
+            <input type="text" id="originInput" value="MMRX" maxlength="4" class="input-field uppercase font-bold text-sky-300 text-center">
           </div>
           <div>
-            <label class="block text-xs font-mono text-slate-400 mb-1">Destino</label>
-            <input type="text" id="arr" value="MMMA" maxlength="4" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-center font-mono font-bold text-emerald-300 focus:border-sky-500 uppercase" required>
+            <label class="label-text">Destino</label>
+            <input type="text" id="destInput" value="MMMA" maxlength="4" class="input-field uppercase font-bold text-emerald-300 text-center">
           </div>
           <div>
-            <label class="block text-xs font-mono text-slate-400 mb-1">Alterno (Opc)</label>
-            <input type="text" id="altn" placeholder="MMTM" maxlength="4" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-center font-mono font-bold text-amber-300 focus:border-sky-500 uppercase">
-          </div>
-        </div>
-
-        <!-- Performance -->
-        <div class="grid grid-cols-2 gap-3 pt-2">
-          <div>
-            <label class="block text-xs font-mono text-slate-400 mb-1">Crucero (FT)</label>
-            <input type="number" id="alt" value="3500" step="500" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm font-mono focus:border-sky-500">
-          </div>
-          <div>
-            <label class="block text-xs font-mono text-slate-400 mb-1">Flujo Comb (GPH)</label>
-            <input type="number" id="burn" value="20" step="0.5" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm font-mono focus:border-sky-500" required>
+            <label class="label-text">Alterno (Opcional)</label>
+            <input type="text" id="altnInput" value="MMTM" maxlength="4" placeholder="Ej: MMTM" class="input-field uppercase font-bold text-amber-300 text-center">
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
-            <label class="block text-xs font-mono text-slate-400 mb-1">TAS (Kts)</label>
-            <input type="number" id="tas" value="200" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm font-mono focus:border-sky-500" required>
+            <label class="label-text">Crucero (FT)</label>
+            <input type="number" id="altInput" value="3500" step="500" class="input-field">
           </div>
           <div>
-            <label class="block text-xs font-mono text-slate-400 mb-1">Viento (+ Cola / - Frente)</label>
-            <input type="number" id="wind" value="0" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm font-mono focus:border-sky-500">
+            <label class="label-text">Flujo Comb (GPH)</label>
+            <input type="number" id="burnInput" value="20" step="0.5" class="input-field">
+          </div>
+          <div>
+            <label class="label-text">TAS (Kts)</label>
+            <input type="number" id="tasInput" value="200" class="input-field">
+          </div>
+          <div>
+            <label class="label-text">Viento (+ Cola / - Frente)</label>
+            <input type="number" id="windInput" value="0" class="input-field">
           </div>
         </div>
 
-        <button type="submit" id="btnCalc" class="w-full mt-4 bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 rounded-lg transition duration-200 shadow-[0_0_15px_rgba(2,132,199,0.5)] flex justify-center items-center font-mono">
-          <i class="fa-solid fa-satellite fa-spin-pulse mr-2" id="loadingIcon" style="display:none;"></i> 
-          <span id="btnText">COMPUTAR FPL Y METAR</span>
+        <!-- Campos Extras de Combustible -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 border-t border-slate-700 pt-4">
+          <div class="md:col-start-3">
+            <label class="label-text text-amber-400"><i class="fa-solid fa-stopwatch mr-1"></i>Extra/Hold (Minutos)</label>
+            <input type="number" id="extraMinInput" value="15" step="5" class="input-field border-amber-500/50">
+          </div>
+          <div>
+            <label class="label-text text-amber-400"><i class="fa-solid fa-gas-pump mr-1"></i>Taxi / Rodaje (Galones)</label>
+            <input type="number" id="taxiGalInput" value="2.0" step="0.5" class="input-field border-amber-500/50">
+          </div>
+        </div>
+
+        <button type="submit" class="w-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold py-3 rounded transition flex justify-center items-center mt-2 uppercase tracking-widest text-sm">
+          Computar FPL y METAR
         </button>
-        <p id="errorMsg" class="text-red-400 text-xs font-mono text-center hidden mt-2"></p>
       </form>
+      <!-- Contenedor de Alertas de Navegación -->
+      <div id="navError" class="hidden mt-4 text-center text-red-400 font-mono text-xs font-bold"></div>
     </section>
 
-    <!-- RESULTADOS Y NAVLOG -->
-    <section class="xl:col-span-8 space-y-4">
-      
-      <!-- Indicadores de Vuelo -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div class="glass-panel p-4 rounded-xl text-center border-t-2 border-t-sky-500">
-          <span class="text-[10px] text-slate-400 font-mono block mb-1">DISTANCIA TOTAL</span>
-          <div class="flex items-baseline justify-center space-x-1">
-            <span id="outDist" class="text-3xl font-bold font-mono text-white">---</span>
-            <span class="text-xs text-sky-400">NM</span>
-          </div>
-        </div>
-        <div class="glass-panel p-4 rounded-xl text-center border-t-2 border-t-indigo-500">
-          <span class="text-[10px] text-slate-400 font-mono block mb-1">GROUND SPEED (GS)</span>
-          <div class="flex items-baseline justify-center space-x-1">
-            <span id="outGs" class="text-3xl font-bold font-mono text-white">---</span>
-            <span class="text-xs text-indigo-400">KTS</span>
-          </div>
-        </div>
-        <div class="glass-panel p-4 rounded-xl text-center border-t-2 border-t-emerald-500">
-          <span class="text-[10px] text-slate-400 font-mono block mb-1">TIEMPO EN RUTA (ETE)</span>
-          <div class="flex items-baseline justify-center space-x-1">
-            <span id="outEte" class="text-3xl font-bold font-mono text-white">--:--</span>
-          </div>
-        </div>
-        <div class="glass-panel p-4 rounded-xl text-center border-t-2 border-t-amber-500">
-          <span class="text-[10px] text-slate-400 font-mono block mb-1">COMBUSTIBLE REQUERIDO</span>
-          <div class="flex items-baseline justify-center space-x-1">
-            <span id="outFuel" class="text-3xl font-bold font-mono text-white">---</span>
-            <span class="text-xs text-amber-400">GAL</span>
-          </div>
-        </div>
+    <!-- DASHBOARD DE RESULTADOS -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="glass-panel p-4 flex flex-col items-center justify-center border-t-2 border-t-slate-500">
+        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2">Distancia Total</span>
+        <div class="flex items-baseline space-x-1"><span id="resDist" class="text-2xl font-bold font-mono text-sky-400">---</span><span class="text-xs text-sky-600">NM</span></div>
       </div>
-
-      <!-- Desglose de Combustible -->
-      <div class="glass-panel p-4 rounded-xl">
-        <h3 class="text-xs font-bold text-slate-300 font-mono border-b border-slate-700 pb-2 mb-3"><i class="fa-solid fa-gas-pump text-amber-400 mr-2"></i>FUEL CALCULATION BREAKDOWN</h3>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm font-mono">
-          <div class="flex flex-col"><span class="text-slate-500 text-[10px]">TRIP (ORIG-DEST)</span><span id="fTrip" class="font-bold">-- GAL</span></div>
-          <div class="flex flex-col"><span class="text-slate-500 text-[10px]">ALTN (DEST-ALTN)</span><span id="fAltn" class="font-bold">-- GAL</span></div>
-          <div class="flex flex-col"><span class="text-slate-500 text-[10px]">RESERVA (VFR/IFR)</span><span id="fRes" class="font-bold">-- GAL</span></div>
-          <div class="flex flex-col"><span class="text-slate-500 text-[10px]">TAXI/EXTRA (Fijo)</span><span class="font-bold">2.0 GAL</span></div>
-        </div>
+      <div class="glass-panel p-4 flex flex-col items-center justify-center border-t-2 border-t-indigo-500">
+        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2">Ground Speed (GS)</span>
+        <div class="flex items-baseline space-x-1"><span id="resGS" class="text-2xl font-bold font-mono text-indigo-400">---</span><span class="text-xs text-indigo-600">KTS</span></div>
       </div>
-
-      <!-- WX Briefing -->
-      <div class="glass-panel p-4 rounded-xl h-full">
-        <h3 class="text-xs font-bold text-slate-300 font-mono border-b border-slate-700 pb-2 mb-3"><i class="fa-solid fa-cloud-bolt text-sky-400 mr-2"></i>NOAA WEATHER BRIEFING (LIVE)</h3>
-        <div class="space-y-2 font-mono text-xs" id="wxContainer">
-          <div class="p-3 bg-slate-900 rounded border border-slate-700 text-slate-500">Esperando ejecución de ruta...</div>
-        </div>
+      <div class="glass-panel p-4 flex flex-col items-center justify-center border-t-2 border-t-emerald-500">
+        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2">Tiempo Total (ETE)</span>
+        <div class="flex items-baseline space-x-1"><span id="resTime" class="text-2xl font-bold font-mono text-emerald-400">--:--</span><span class="text-xs text-emerald-600">HRS</span></div>
       </div>
+      <div class="glass-panel p-4 flex flex-col items-center justify-center border-t-2 border-t-amber-500">
+        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2">Total Req. Fuel</span>
+        <div class="flex items-baseline space-x-1"><span id="resTotalFuel" class="text-2xl font-bold font-mono text-amber-400">---</span><span class="text-xs text-amber-600">GAL</span></div>
+      </div>
+    </div>
 
+    <!-- FUEL BREAKDOWN -->
+    <section class="glass-panel p-5">
+      <h2 class="text-xs font-bold text-amber-400 border-b border-slate-700 pb-2 mb-4 uppercase tracking-wider flex items-center">
+        <i class="fa-solid fa-gas-pump mr-2"></i> Fuel Calculation Breakdown
+      </h2>
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4 font-mono text-xs">
+        <div><span class="text-slate-500 block">TRIP (Orig-Dest)</span><span id="logTrip" class="text-white font-bold text-sm">-- GAL</span></div>
+        <div><span class="text-slate-500 block">ALTN (Dest-Altn)</span><span id="logAltn" class="text-white font-bold text-sm">-- GAL</span></div>
+        <div><span class="text-slate-500 block">RESERVA (<span id="logResLabel">--</span>m)</span><span id="logReserve" class="text-white font-bold text-sm">-- GAL</span></div>
+        <div><span class="text-slate-500 block">EXTRA (<span id="logExtLabel">--</span>m)</span><span id="logExtra" class="text-white font-bold text-sm">-- GAL</span></div>
+        <div><span class="text-slate-500 block">TAXI / APU</span><span id="logTaxi" class="text-white font-bold text-sm">-- GAL</span></div>
+      </div>
     </section>
+
+    <!-- METAR BRIEFING -->
+    <section class="glass-panel p-5">
+      <h2 class="text-xs font-bold text-sky-400 border-b border-slate-700 pb-2 mb-4 uppercase tracking-wider flex items-center">
+        <i class="fa-solid fa-cloud-bolt mr-2"></i> NOAA Weather Briefing (Live)
+      </h2>
+      <div class="space-y-2 font-mono text-xs">
+        <div class="bg-slate-900 p-3 rounded"><span class="text-sky-400 font-bold w-12 inline-block" id="lblOrig">----</span> <span id="wxOrig" class="text-slate-300">Esperando solicitud...</span></div>
+        <div class="bg-slate-900 p-3 rounded"><span class="text-emerald-400 font-bold w-12 inline-block" id="lblDest">----</span> <span id="wxDest" class="text-slate-300">Esperando solicitud...</span></div>
+        <div class="bg-slate-900 p-3 rounded hidden" id="boxAltn"><span class="text-amber-400 font-bold w-12 inline-block" id="lblAltn">----</span> <span id="wxAltn" class="text-slate-300">Esperando solicitud...</span></div>
+      </div>
+    </section>
+
   </main>
 
   <script>
-    // Fórmulas Navigacionales
-    const R_NM = 3440.065; // Radio Tierra en Millas Náuticas
+    // Base de datos de aeropuertos 100% Offline para distancias (Añade los que necesites aquí)
+    const AIRPORTS = {
+      "MMRX": { lat: 26.0089, lon: -98.2286 },
+      "MMMA": { lat: 25.7699, lon: -97.5252 },
+      "MMTM": { lat: 22.2964, lon: -97.8659 },
+      "MMMY": { lat: 25.7785, lon: -100.1069 },
+      "MMAN": { lat: 25.8656, lon: -100.2373 },
+      "MMMX": { lat: 19.4363, lon: -99.0721 },
+      "KMFE": { lat: 26.1758, lon: -98.2386 },
+      "KBRO": { lat: 25.9068, lon: -97.4259 },
+      "KDFW": { lat: 32.8998, lon: -97.0403 },
+      "KIAH": { lat: 29.9902, lon: -95.3368 }
+    };
 
-    function toRad(deg) { return deg * Math.PI / 180; }
-
-    function getDistance(lat1, lon1, lat2, lon2) {
-      const dLat = toRad(lat2 - lat1);
-      const dLon = toRad(lon2 - lon1);
+    function calcDistance(lat1, lon1, lat2, lon2) {
+      const R = 3440.065; // NM
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
       const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * 
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
                 Math.sin(dLon/2) * Math.sin(dLon/2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-      return R_NM * c;
+      return Math.round(R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))));
     }
 
-    function formatTime(hoursDecimal) {
-      const totalMins = Math.round(hoursDecimal * 60);
-      const h = Math.floor(totalMins / 60);
-      const m = totalMins % 60;
-      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-    }
-
-    // API Calls a NOAA (100% Client Side, sin CORS issues en aviationweather.gov)
-    async function fetchStationCoords(icao) {
-      if(!icao) return null;
-      try {
-        const res = await fetch(`https://aviationweather.gov/api/data/stationinfo?ids=${icao}&format=json`);
-        const data = await res.json();
-        if(data && data.length > 0) return { lat: data[0].lat, lon: data[0].lon, name: data[0].name };
-        return null;
-      } catch (e) { return null; }
-    }
-
-    async function fetchMetar(icao) {
-      if(!icao) return null;
+    async function fetchWX(icao, elementId) {
+      if(!icao) return;
+      document.getElementById(elementId).innerText = "Conectando con NOAA...";
       try {
         const res = await fetch(`https://aviationweather.gov/api/data/metar?ids=${icao}&format=json`);
         const data = await res.json();
-        if(data && data.length > 0) return data[0].rawOb;
-        return "NO METAR DATA REPORTED AT THIS TIME / VFR ONLY STATION";
-      } catch (e) { return "ERROR FETCHING FROM NOAA SERVER"; }
+        document.getElementById(elementId).innerText = (data && data.length > 0) ? data[0].rawOb : `No hay reporte reciente para ${icao}`;
+      } catch (e) {
+        document.getElementById(elementId).innerText = `Error conectando con API para ${icao}`;
+      }
     }
 
-    // Lógica Principal
-    document.getElementById('fplForm').addEventListener('submit', async function(e) {
+    document.getElementById('flightForm').addEventListener('submit', function(e) {
       e.preventDefault();
       
-      const btnText = document.getElementById('btnText');
-      const loadIcon = document.getElementById('loadingIcon');
-      const errMsg = document.getElementById('errorMsg');
-      const wxContainer = document.getElementById('wxContainer');
+      const errorDiv = document.getElementById('navError');
+      errorDiv.classList.add('hidden');
+
+      const orig = document.getElementById('originInput').value.trim().toUpperCase();
+      const dest = document.getElementById('destInput').value.trim().toUpperCase();
+      const altn = document.getElementById('altnInput').value.trim().toUpperCase();
       
-      // Reset UI
-      btnText.innerText = "CALCULANDO...";
-      loadIcon.style.display = "inline-block";
-      errMsg.classList.add('hidden');
-      wxContainer.innerHTML = '';
+      const resMins = parseInt(document.getElementById('rulesInput').value);
+      const extraMins = parseInt(document.getElementById('extraMinInput').value) || 0;
+      const taxiGal = parseFloat(document.getElementById('taxiGalInput').value) || 0;
+      const tas = parseFloat(document.getElementById('tasInput').value) || 1;
+      const wind = parseFloat(document.getElementById('windInput').value) || 0;
+      const gph = parseFloat(document.getElementById('burnInput').value) || 1;
 
-      // Inputs
-      const dep = document.getElementById('dep').value.trim().toUpperCase();
-      const arr = document.getElementById('arr').value.trim().toUpperCase();
-      const altn = document.getElementById('altn').value.trim().toUpperCase();
-      const rules = document.getElementById('fltRules').value; // VFR o IFR
-      
-      const tas = parseFloat(document.getElementById('tas').value) || 0;
-      const wind = parseFloat(document.getElementById('wind').value) || 0;
-      const burn = parseFloat(document.getElementById('burn').value) || 0;
+      // Validar existencia en base de datos local
+      if (!AIRPORTS[orig]) return showError(`El origen ${orig} no está en la NavData interna.`);
+      if (!AIRPORTS[dest]) return showError(`El destino ${dest} no está en la NavData interna.`);
+      if (altn && !AIRPORTS[altn]) return showError(`El alterno ${altn} no está en la NavData interna.`);
 
-      const gs = tas + wind; 
-      if(gs <= 0) {
-        showError("Viento en contra excede TAS. Aeronave volando en reversa.");
-        return;
-      }
+      // Cálculos Matemáticos
+      const gs = tas + wind;
+      if(gs <= 0) return showError("Viento de frente excede la TAS. GS Negativa.");
 
-      // 1. Fetch Coordinates
-      const stDep = await fetchStationCoords(dep);
-      const stArr = await fetchStationCoords(arr);
-      let stAltn = null;
-
-      if(!stDep) { showError(`NOAA no tiene coordenadas para Origen: ${dep}`); return; }
-      if(!stArr) { showError(`NOAA no tiene coordenadas para Destino: ${arr}`); return; }
-      if(altn) {
-        stAltn = await fetchStationCoords(altn);
-        if(!stAltn) { showError(`NOAA no tiene coordenadas para Alterno: ${altn}`); return; }
-      }
-
-      // 2. Nav Math
-      const distTrip = getDistance(stDep.lat, stDep.lon, stArr.lat, stArr.lon);
-      const distAltn = stAltn ? getDistance(stArr.lat, stArr.lon, stAltn.lat, stAltn.lon) : 0;
-      const totalDist = distTrip + distAltn;
+      const distTrip = calcDistance(AIRPORTS[orig].lat, AIRPORTS[orig].lon, AIRPORTS[dest].lat, AIRPORTS[dest].lon);
+      const distAltn = altn ? calcDistance(AIRPORTS[dest].lat, AIRPORTS[dest].lon, AIRPORTS[altn].lat, AIRPORTS[altn].lon) : 0;
+      const distTotal = distTrip + distAltn;
 
       const timeTrip = distTrip / gs;
       const timeAltn = distAltn / gs;
+      const totalTimeHrs = timeTrip + timeAltn;
       
-      // 3. Fuel Math
-      const fuelTrip = timeTrip * burn;
-      const fuelAltn = timeAltn * burn;
-      const fuelResHrs = (rules === 'IFR') ? 0.75 : 0.50; // 45m IFR, 30m VFR
-      const fuelRes = fuelResHrs * burn;
-      const fuelTaxi = 2.0; // Fijo 2 galones
-      const fuelTotal = fuelTrip + fuelAltn + fuelRes + fuelTaxi;
+      const hrs = Math.floor(totalTimeHrs);
+      const mins = Math.round((totalTimeHrs - hrs) * 60);
 
-      // 4. Update UI - Dashboard
-      document.getElementById('outDist').innerText = Math.round(totalDist);
-      document.getElementById('outGs').innerText = Math.round(gs);
-      document.getElementById('outEte').innerText = formatTime(timeTrip + timeAltn);
-      document.getElementById('outFuel').innerText = fuelTotal.toFixed(1);
+      // Consumos
+      const fuelTrip = timeTrip * gph;
+      const fuelAltn = timeAltn * gph;
+      const fuelRes = (resMins / 60) * gph;
+      const fuelExtra = (extraMins / 60) * gph;
+      const totalFuel = fuelTrip + fuelAltn + fuelRes + fuelExtra + taxiGal;
 
-      document.getElementById('fTrip').innerText = fuelTrip.toFixed(1) + " GAL";
-      document.getElementById('fAltn').innerText = fuelAltn.toFixed(1) + " GAL";
-      document.getElementById('fRes').innerText = fuelRes.toFixed(1) + " GAL";
+      // Inyección a Interfaz
+      document.getElementById('resDist').innerText = distTotal;
+      document.getElementById('resGS').innerText = gs;
+      document.getElementById('resTime').innerText = `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+      document.getElementById('resTotalFuel').innerText = totalFuel.toFixed(1);
 
-      // 5. Fetch WX
-      const wxDep = await fetchMetar(dep);
-      const wxArr = await fetchMetar(arr);
-      let wxAltnHTML = "";
+      document.getElementById('logTrip').innerText = `${fuelTrip.toFixed(1)} GAL`;
+      document.getElementById('logAltn').innerText = altn ? `${fuelAltn.toFixed(1)} GAL` : `0.0 GAL`;
+      document.getElementById('logResLabel').innerText = resMins;
+      document.getElementById('logReserve').innerText = `${fuelRes.toFixed(1)} GAL`;
+      document.getElementById('logExtLabel').innerText = extraMins;
+      document.getElementById('logExtra').innerText = `${fuelExtra.toFixed(1)} GAL`;
+      document.getElementById('logTaxi').innerText = `${taxiGal.toFixed(1)} GAL`;
 
+      // Etiquetas Clima
+      document.getElementById('lblOrig').innerText = orig;
+      document.getElementById('lblDest').innerText = dest;
+      fetchWX(orig, 'wxOrig');
+      fetchWX(dest, 'wxDest');
+
+      const boxAltn = document.getElementById('boxAltn');
       if(altn) {
-        const wxAltn = await fetchMetar(altn);
-        wxAltnHTML = `<div class="p-3 bg-slate-900/50 rounded border border-amber-900/50"><span class="text-amber-400 font-bold block mb-1">ALTN (${altn}):</span><p class="text-slate-300">${wxAltn}</p></div>`;
+        boxAltn.classList.remove('hidden');
+        document.getElementById('lblAltn').innerText = altn;
+        fetchWX(altn, 'wxAltn');
+      } else {
+        boxAltn.classList.add('hidden');
       }
 
-      wxContainer.innerHTML = `
-        <div class="p-3 bg-slate-900/50 rounded border border-sky-900/50"><span class="text-sky-400 font-bold block mb-1">ORIG (${dep}):</span><p class="text-slate-300">${wxDep}</p></div>
-        <div class="p-3 bg-slate-900/50 rounded border border-emerald-900/50"><span class="text-emerald-400 font-bold block mb-1">DEST (${arr}):</span><p class="text-slate-300">${wxArr}</p></div>
-        ${wxAltnHTML}
-      `;
-
-      // Restore UI
-      btnText.innerText = "COMPUTAR FPL Y METAR";
-      loadIcon.style.display = "none";
-
       function showError(msg) {
-        errMsg.innerText = msg;
-        errMsg.classList.remove('hidden');
-        btnText.innerText = "COMPUTAR FPL Y METAR";
-        loadIcon.style.display = "none";
+        errorDiv.innerText = msg;
+        errorDiv.classList.remove('hidden');
       }
     });
   </script>
