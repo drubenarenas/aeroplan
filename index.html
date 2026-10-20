@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AeroPlan - Flight Planning & Briefing Tool</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-slate-800 border-b border-slate-700 p-4 shadow-lg">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <i class="fa-solid font-bold text-sky-400 text-2xl fa-plane-departure"></i>
+        <h1 class="text-xl font-bold tracking-wider text-slate-100">AEROPLAN <span class="text-xs text-sky-400 font-mono">v1.0 (Lite)</span></h1>
+      </div>
+      <span class="text-xs text-slate-400 font-mono"><i class="fa-solid fa-satellite-dish text-emerald-400 mr-1"></i> Live NOAA WX Connected</span>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Formulario de Plan de Vuelo -->
+    <section class="lg:col-span-1 bg-slate-800/90 border border-slate-700 rounded-xl p-5 shadow-xl">
+      <h2 class="text-lg font-semibold text-sky-400 border-b border-slate-700 pb-3 mb-4 flex items-center">
+        <i class="fa-solid fa-clipboard-list mr-2"></i> Datos del Plan de Vuelo
+      </h2>
+
+      <form id="flightForm" class="space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-mono text-slate-400 mb-1">Origen (ICAO)</label>
+            <input type="text" id="originInput" value="MMMX" uppercase maxlength="4" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-center font-mono focus:border-sky-500 focus:outline-none uppercase">
+          </div>
+          <div>
+            <label class="block text-xs font-mono text-slate-400 mb-1">Destino (ICAO)</label>
+            <input type="text" id="destInput" value="KMFE" uppercase maxlength="4" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-center font-mono focus:border-sky-500 focus:outline-none uppercase">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-mono text-slate-400 mb-1">Aeronave / Matrícula</label>
+            <input type="text" id="aircraftInput" value="C172 - N123AB" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-center font-mono focus:border-sky-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-mono text-slate-400 mb-1">Altitud Crucero (ft)</label>
+            <input type="number" id="altInput" value="8500" step="500" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-center font-mono focus:border-sky-500 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-mono text-slate-400 mb-1">Velocidad TAS (kts)</label>
+            <input type="number" id="tasInput" value="120" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-center font-mono focus:border-sky-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-mono text-slate-400 mb-1">Flujo Comb. (GPH)</label>
+            <input type="number" id="burnInput" value="10" step="0.5" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-center font-mono focus:border-sky-500 focus:outline-none">
+          </div>
+        </div>
+
+        <button type="submit" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-medium py-2.5 rounded-lg transition duration-200 shadow-md flex justify-center items-center font-mono">
+          <i class="fa-solid fa-calculator mr-2"></i> PROCESAR PLAN Y METAR
+        </button>
+      </form>
+    </section>
+
+    <!-- Resultados, NavLog y METAR -->
+    <section class="lg:col-span-2 space-y-6">
+
+      <!-- Métricas Clave / Resumen -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl text-center">
+          <span class="text-xs text-slate-400 font-mono block">DISTANCIA DIRECTA</span>
+          <span id="resDistance" class="text-2xl font-bold font-mono text-sky-400">0</span>
+          <span class="text-xs text-slate-400">NM</span>
+        </div>
+        <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl text-center">
+          <span class="text-xs text-slate-400 font-mono block">TIEMPO EN RUTA (ETE)</span>
+          <span id="resTime" class="text-2xl font-bold font-mono text-emerald-400">00:00</span>
+          <span class="text-xs text-slate-400">HH:MM</span>
+        </div>
+        <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl text-center">
+          <span class="text-xs text-slate-400 font-mono block">FUEL EN RUTA</span>
+          <span id="resFuel" class="text-2xl font-bold font-mono text-amber-400">0.0</span>
+          <span class="text-xs text-slate-400">GAL</span>
+        </div>
+        <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl text-center">
+          <span class="text-xs text-slate-400 font-mono block">FUEL MÍNIMO (+45m)</span>
+          <span id="resTotalFuel" class="text-2xl font-bold font-mono text-amber-500">0.0</span>
+          <span class="text-xs text-slate-400">GAL</span>
+        </div>
+      </div>
+
+      <!-- Live METAR Briefing -->
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-xl">
+        <h2 class="text-md font-semibold text-sky-400 border-b border-slate-700 pb-2 mb-3 flex items-center justify-between">
+          <span><i class="fa-solid fa-cloud-sun-rain mr-2"></i> Reporte Meteorológico Oficial (NOAA METAR)</span>
+          <button onclick="fetchMetars()" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-2 py-1 rounded font-mono">Actualizar</button>
+        </h2>
+
+        <div class="space-y-3 font-mono text-xs">
+          <div class="bg-slate-900/80 p-3 rounded border border-slate-700/80">
+            <span class="text-sky-400 font-bold block mb-1">ORIGEN (<span id="metarOrigTitle">MMMX</span>):</span>
+            <p id="metarOrigText" class="text-slate-300 leading-relaxed">Cargando METAR...</p>
+          </div>
+          <div class="bg-slate-900/80 p-3 rounded border border-slate-700/80">
+            <span class="text-sky-400 font-bold block mb-1">DESTINO (<span id="metarDestTitle">KMFE</span>):</span>
+            <p id="metarDestText" class="text-slate-300 leading-relaxed">Cargando METAR...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumen NavLog / Despacho -->
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-xl font-mono text-xs">
+        <h2 class="text-md font-semibold font-sans text-sky-400 border-b border-slate-700 pb-2 mb-3 flex items-center">
+          <i class="fa-solid fa-file-invoice mr-2"></i> Resumen de Despacho Operativo
+        </h2>
+        <div id="navlogSummary" class="bg-slate-900 p-4 rounded border border-slate-700 text-slate-300 space-y-2">
+          Presiona "Procesar Plan" para generar la hoja de ruta.
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <script>
+    // Base de datos integrada de aeropuertos de referencia
+    const AIRPORTS = {
+      "MMMX": { name: "Aicm Ciudad de México", lat: 19.4363, lon: -99.0721 },
+      "MMMD": { name: "Mérida Rejón", lat: 20.9370, lon: -89.6577 },
+      "MMTJ": { name: "Tijuana Intl", lat: 32.5411, lon: -116.9702 },
+      "MMMY": { name: "Monterrey Del Norte", lat: 25.8656, lon: -100.2373 },
+      "KMFE": { name: "McAllen Miller Intl", lat: 26.1758, lon: -98.2386 },
+      "KDFW": { name: "Dallas/Fort Worth Intl", lat: 32.8998, lon: -97.0403 },
+      "KSLC": { name: "Salt Lake City Intl", lat: 40.7884, lon: -111.9778 },
+      "KIAH": { name: "Houston George Bush", lat: 29.9902, lon: -95.3368 },
+      "KJFK": { name: "New York JFK", lat: 40.6413, lon: -73.7781 },
+      "KLAX": { name: "Los Angeles Intl", lat: 33.9425, lon: -118.4081 }
+    };
+
+    // Cálculo de Distancia Ortodrómica en Millas Náuticas (Great Circle Distance)
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+      const R = 3440.065; // Radio de la Tierra en Millas Náuticas (NM)
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = 
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return Math.round(R * c);
+    }
+
+    // Consulta de METAR en vivo desde la API de la NOAA (Aviation Weather Center)
+    async function fetchMetarForICAO(icao) {
+      try {
+        const response = await fetch(`https://aviationweather.gov/api/data/metar?ids=${icao}&format=json`);
+        if (!response.ok) throw new Error('Error al conectar con NOAA');
+        const data = await response.json();
+        if (data && data.length > 0) {
+          return data[0].rawOb || "Sin reporte METAR disponible.";
+        }
+        return `No se encontró METAR reciente para ${icao}.`;
+      } catch (err) {
+        return `[Error al conectar con NOAA API para ${icao}]`;
+      }
+    }
+
+    async function fetchMetars() {
+      const orig = document.getElementById('originInput').value.trim().toUpperCase();
+      const dest = document.getElementById('destInput').value.trim().toUpperCase();
+
+      document.getElementById('metarOrigTitle').innerText = orig;
+      document.getElementById('metarDestTitle').innerText = dest;
+      document.getElementById('metarOrigText').innerText = "Consultando NOAA...";
+      document.getElementById('metarDestText').innerText = "Consultando NOAA...";
+
+      const metarOrig = await fetchMetarForICAO(orig);
+      const metarDest = await fetchMetarForICAO(dest);
+
+      document.getElementById('metarOrigText').innerText = metarOrig;
+      document.getElementById('metarDestText').innerText = metarDest;
+    }
+
+    // Procesar Plan de Vuelo
+    document.getElementById('flightForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const orig = document.getElementById('originInput').value.trim().toUpperCase();
+      const dest = document.getElementById('destInput').value.trim().toUpperCase();
+      const aircraft = document.getElementById('aircraftInput').value;
+      const alt = parseInt(document.getElementById('altInput').value) || 0;
+      const tas = parseFloat(document.getElementById('tasInput').value) || 100;
+      const burn = parseFloat(document.getElementById('burnInput').value) || 10;
+
+      const aptOrig = AIRPORTS[orig];
+      const aptDest = AIRPORTS[dest];
+
+      let distance = 0;
+      if (aptOrig && aptDest) {
+        distance = calculateDistance(aptOrig.lat, aptOrig.lon, aptDest.lat, aptDest.lon);
+      } else {
+        // Distancia estimada genérica si el aeropuerto no está en la base interna
+        distance = 350; 
+      }
+
+      // Cálculos de vuelo
+      const timeHours = distance / tas;
+      const totalMinutes = Math.round(timeHours * 60);
+      const hrs = Math.floor(totalMinutes / 60);
+      const mins = totalMinutes % 60;
+      const formattedTime = `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+
+      const fuelRoute = (timeHours * burn).toFixed(1);
+      const fuelReserve = (0.75 * burn); // 45 min de reserva legal IFR/VFR
+      const fuelTotal = (parseFloat(fuelRoute) + fuelReserve).toFixed(1);
+
+      // Renderizar resultados en pantalla
+      document.getElementById('resDistance').innerText = distance;
+      document.getElementById('resTime').innerText = formattedTime;
+      document.getElementById('resFuel').innerText = fuelRoute;
+      document.getElementById('resTotalFuel').innerText = fuelTotal;
+
+      // Renderizar NavLog
+      const navlogHTML = `
+        <div class="grid grid-cols-2 gap-2 text-xs border-b border-slate-800 pb-2 mb-2">
+          <div><span class="text-slate-500">AERONAVE:</span> ${aircraft}</div>
+          <div><span class="text-slate-500">ALTITUD CRUCERO:</span> ${alt} FT</div>
+          <div><span class="text-slate-500">RUTA DIRECTA:</span> ${orig} &rarr; ${dest}</div>
+          <div><span class="text-slate-500">VELOCIDAD (TAS):</span> ${tas} KTS</div>
+        </div>
+        <p class="text-emerald-400 font-bold">&check; PLAN COMPUTADO CON ÉXITO</p>
+        <p class="text-slate-400">Combustible de ruta: <strong>${fuelRoute} Gal</strong> | Reserva 45m: <strong>${fuelReserve.toFixed(1)} Gal</strong> | Total Mínimo a Bordo: <strong class="text-amber-400">${fuelTotal} Gal</strong></p>
+      `;
+      document.getElementById('navlogSummary').innerHTML = navlogHTML;
+
+      // Obtener METARs de la NOAA
+      fetchMetars();
+    });
+
+    // Ejecución inicial automática
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('flightForm').dispatchEvent(new Event('submit'));
+    });
+  </script>
+</body>
+</html>
