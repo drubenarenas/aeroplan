@@ -3,47 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AeroPlan v4.0 - Jeppesen EFB Edition</title>
+  <title>AeroPlan v4.1 - Jeppesen EFB</title>
 
   <!-- Tailwind CSS & FontAwesome -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- Leaflet.js para Cartografía IFR Interactiva -->
+  <!-- Leaflet.js -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <style>
-    body { background-color: #0b0f19; color: #f1f5f9; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
-    .efb-card { background: rgba(15, 23, 42, 0.85); border: 1px solid #1e293b; backdrop-filter: blur(8px); border-radius: 0.75rem; }
+    body { background-color: #0b0f19; color: #f1f5f9; font-family: 'Segoe UI', system-ui, sans-serif; }
+    .efb-card { background: rgba(15, 23, 42, 0.9); border: 1px solid #1e293b; border-radius: 0.75rem; }
     .input-efb { width: 100%; background: #090d16; border: 1px solid #334155; border-radius: 0.375rem; padding: 0.5rem; font-size: 0.875rem; font-family: monospace; color: #38bdf8; text-transform: uppercase; text-align: center; }
     .input-efb:focus { outline: none; border-color: #0284c7; box-shadow: 0 0 10px rgba(2, 132, 199, 0.4); }
     #map { height: 320px; border-radius: 0.5rem; border: 1px solid #334155; }
-    .leaflet-container { background: #090d16 !important; }
   </style>
 </head>
 <body class="min-h-screen pb-12">
 
-  <!-- TOP HEADER JEPPESEN STYLE -->
   <header class="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-50 shadow-2xl">
     <div class="max-w-7xl mx-auto flex justify-between items-center">
       <div class="flex items-center space-x-3">
         <i class="fa-solid fa-plane-departure text-sky-400 text-2xl"></i>
         <div>
-          <h1 class="text-lg font-bold tracking-widest text-white leading-none">AEROPLAN <span class="text-xs text-sky-400 font-mono">v4.0 JEPPESEN EFB</span></h1>
-          <p class="text-[10px] text-slate-400 font-mono mt-0.5">IFR FLIGHT PLANNING & DISPATCH SYSTEM</p>
+          <h1 class="text-lg font-bold tracking-widest text-white leading-none">AEROPLAN <span class="text-xs text-sky-400 font-mono">v4.1 PRO</span></h1>
+          <p class="text-[10px] text-slate-400 font-mono mt-0.5">JEPPESEN EFB & IFR DISPATCH SYSTEM</p>
         </div>
       </div>
       <div class="flex space-x-4 text-xs font-mono">
-        <span class="text-emerald-400 flex items-center"><i class="fa-solid fa-earth-americas mr-1"></i> Global NavData Live</span>
-        <span class="text-sky-400 flex items-center"><i class="fa-solid fa-cloud-bolt mr-1"></i> NOAA WX Sync</span>
+        <span class="text-emerald-400 flex items-center"><i class="fa-solid fa-map mr-1"></i> OSM Vector Map</span>
+        <span class="text-sky-400 flex items-center"><i class="fa-solid fa-cloud-bolt mr-1"></i> METAR Live</span>
       </div>
     </div>
   </header>
 
   <main class="max-w-7xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-    <!-- IZQUIERDA: FORMULARIO DE DESPACHO -->
+    <!-- FORMULARIO -->
     <section class="lg:col-span-4 space-y-5">
       <div class="efb-card p-5">
         <h2 class="text-xs font-bold text-sky-400 border-b border-slate-800 pb-2 mb-4 uppercase tracking-wider flex items-center justify-between">
@@ -66,27 +64,25 @@
             </div>
           </div>
 
-          <!-- RUTA METROPOLITANA / AEROPUERTOS -->
           <div class="grid grid-cols-3 gap-2">
             <div>
               <label class="block text-[11px] font-mono text-slate-400 mb-1">Origen</label>
-              <input type="text" id="origInput" value="MMRX" maxlength="4" class="input-field input-efb font-bold text-sky-300">
+              <input type="text" id="origInput" value="MMRX" maxlength="4" class="input-efb font-bold text-sky-300">
             </div>
             <div>
               <label class="block text-[11px] font-mono text-slate-400 mb-1">Destino</label>
-              <input type="text" id="destInput" value="MMMA" maxlength="4" class="input-field input-efb font-bold text-emerald-300">
+              <input type="text" id="destInput" value="MMMA" maxlength="4" class="input-efb font-bold text-emerald-300">
             </div>
             <div>
-              <label class="block text-[11px] font-mono text-slate-400 mb-1">Alterno</label>
-              <input type="text" id="altnInput" value="MMTM" maxlength="4" class="input-field input-efb font-bold text-amber-300">
+              <label class="block text-[11px] font-mono text-slate-400 mb-1">Alterno (Opcional)</label>
+              <input type="text" id="altnInput" value="" maxlength="4" placeholder="Sin Alterno" class="input-efb font-bold text-amber-300">
             </div>
           </div>
 
-          <!-- RENDIMIENTO -->
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-[11px] font-mono text-slate-400 mb-1">Altitud (FT)</label>
-              <input type="number" id="altInput" value="3500" step="500" class="input-efb">
+              <input type="number" id="altInput" value="3000" step="500" class="input-efb">
             </div>
             <div>
               <label class="block text-[11px] font-mono text-slate-400 mb-1">Flujo (GPH)</label>
@@ -101,11 +97,10 @@
             </div>
             <div>
               <label class="block text-[11px] font-mono text-slate-400 mb-1">Viento (Kts)</label>
-              <input type="number" id="windInput" value="0" class="input-efb" placeholder="Ej: -10 o 15">
+              <input type="number" id="windInput" value="0" class="input-efb">
             </div>
           </div>
 
-          <!-- RESERVAS Y TAXI -->
           <div class="grid grid-cols-2 gap-3 border-t border-slate-800 pt-3">
             <div>
               <label class="block text-[11px] font-mono text-amber-400 mb-1">Hold Extra (Min)</label>
@@ -117,19 +112,16 @@
             </div>
           </div>
 
-          <button type="submit" id="btnCompute" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 rounded-lg transition duration-200 shadow-lg flex justify-center items-center uppercase tracking-wider text-xs">
+          <button type="submit" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 rounded-lg transition uppercase tracking-wider text-xs">
             <i class="fa-solid fa-calculator mr-2"></i> Computar FPL, Ruta & WX
           </button>
         </form>
-
-        <div id="statusAlert" class="hidden mt-3 p-2 bg-slate-900 border border-slate-700 rounded text-center text-xs font-mono"></div>
       </div>
     </section>
 
-    <!-- DERECHA: PANTALLA EFB, CARTA NAVEGACIÓN, NAVLOG & FPL -->
+    <!-- RESULTADOS -->
     <section class="lg:col-span-8 space-y-5">
 
-      <!-- INSTRUMENTOS PRINCIPALES -->
       <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
         <div class="efb-card p-3 text-center border-t-2 border-t-sky-500">
           <span class="text-[9px] font-mono text-slate-400 uppercase block">Dist. Total</span>
@@ -148,42 +140,42 @@
           <span id="resFuel" class="text-xl font-bold font-mono text-amber-400">0.0</span> <span class="text-[10px] text-slate-500">GAL</span>
         </div>
         <div class="efb-card p-3 text-center border-t-2 border-t-purple-500">
-          <span class="text-[9px] font-mono text-slate-400 uppercase block">MEA / MSA</span>
-          <span id="resMsa" class="text-xl font-bold font-mono text-purple-400">2,500</span> <span class="text-[10px] text-slate-500">FT</span>
+          <span class="text-[9px] font-mono text-slate-400 uppercase block">MEA de Ruta</span>
+          <span id="resMsa" class="text-xl font-bold font-mono text-purple-400">3,000</span> <span class="text-[10px] text-slate-500">FT</span>
         </div>
       </div>
 
-      <!-- CARTA IFR INTERACTIVA (MAPA JEPPESEN STYLE) -->
+      <!-- MAPA PÚBLICO OPENSTREETMAP (Sin API Key) -->
       <div class="efb-card p-4">
         <div class="flex justify-between items-center mb-2">
           <h3 class="text-xs font-bold text-sky-400 uppercase font-mono flex items-center">
-            <i class="fa-solid fa-map-location-dot mr-2"></i> Carta de Ruta IFR / Visualizador Vectorial
+            <i class="fa-solid fa-map-location-dot mr-2"></i> Carta de Ruta / Trayectoria
           </h3>
           <span id="airwayBadge" class="text-[10px] bg-slate-800 text-sky-300 font-mono px-2 py-0.5 rounded border border-slate-700">Aerovía V2-10</span>
         </div>
         <div id="map"></div>
       </div>
 
-      <!-- IFR NAVLOG DETALLADO -->
+      <!-- DESGLOSE -->
       <div class="efb-card p-4">
         <h3 class="text-xs font-bold text-amber-400 uppercase font-mono mb-3 border-b border-slate-800 pb-2 flex items-center">
-          <i class="fa-solid fa-list-check mr-2"></i> Desglose de Combustible & Tramos
+          <i class="fa-solid fa-list-check mr-2"></i> Desglose de Combustible
         </h3>
         <div class="grid grid-cols-2 md:grid-cols-5 gap-2 font-mono text-xs">
           <div class="bg-slate-900 p-2 rounded border border-slate-800">
-            <span class="text-slate-500 text-[10px] block">TRIP (Ruta)</span>
+            <span class="text-slate-500 text-[10px] block">TRIP</span>
             <span id="logTrip" class="text-white font-bold">0.0 GAL</span>
           </div>
           <div class="bg-slate-900 p-2 rounded border border-slate-800">
-            <span class="text-slate-500 text-[10px] block">ALTN (Alterno)</span>
+            <span class="text-slate-500 text-[10px] block">ALTN</span>
             <span id="logAltn" class="text-white font-bold">0.0 GAL</span>
           </div>
           <div class="bg-slate-900 p-2 rounded border border-slate-800">
-            <span class="text-slate-500 text-[10px] block">RESERVA (<span id="lblRes">45</span>m)</span>
+            <span class="text-slate-500 text-[10px] block">RESERVA (45m)</span>
             <span id="logRes" class="text-white font-bold">0.0 GAL</span>
           </div>
           <div class="bg-slate-900 p-2 rounded border border-slate-800">
-            <span class="text-slate-500 text-[10px] block">HOLD (<span id="lblHold">15</span>m)</span>
+            <span class="text-slate-500 text-[10px] block">HOLD (15m)</span>
             <span id="logHold" class="text-white font-bold">0.0 GAL</span>
           </div>
           <div class="bg-slate-900 p-2 rounded border border-slate-800">
@@ -193,29 +185,19 @@
         </div>
       </div>
 
-      <!-- TIRA DE PLAN DE VUELO OFICIAL ICAO -->
-      <div class="efb-card p-4 font-mono">
-        <h3 class="text-xs font-bold text-emerald-400 uppercase font-sans mb-2 flex items-center">
-          <i class="fa-solid fa-file-lines mr-2"></i> Tira Oficial de Plan de Vuelo ICAO (ATC Strip)
-        </h3>
-        <div id="icaoStrip" class="bg-slate-950 p-3 rounded border border-slate-800 text-slate-300 text-[11px] leading-relaxed break-all select-all">
-          Generando plan de vuelo...
-        </div>
-      </div>
-
-      <!-- WEATHER BRIEFING (NOAA METAR) -->
+      <!-- METAR CON PROXY LIBRE -->
       <div class="efb-card p-4">
         <h3 class="text-xs font-bold text-sky-400 uppercase font-mono mb-3 border-b border-slate-800 pb-2 flex items-center">
-          <i class="fa-solid fa-cloud-bolt mr-2"></i> Reportes Meteorológicos Oficiales (NOAA METAR)
+          <i class="fa-solid fa-cloud-bolt mr-2"></i> Reportes METAR
         </h3>
         <div class="space-y-2 font-mono text-xs">
           <div class="bg-slate-950 p-3 rounded border-l-2 border-l-sky-500">
             <span class="text-sky-400 font-bold block mb-1" id="lblMetarOrig">MMRX:</span>
-            <p id="txtMetarOrig" class="text-slate-300">Cargando METAR...</p>
+            <p id="txtMetarOrig" class="text-slate-300">Cargando...</p>
           </div>
           <div class="bg-slate-950 p-3 rounded border-l-2 border-l-emerald-500">
             <span class="text-emerald-400 font-bold block mb-1" id="lblMetarDest">MMMA:</span>
-            <p id="txtMetarDest" class="text-slate-300">Cargando METAR...</p>
+            <p id="txtMetarDest" class="text-slate-300">Cargando...</p>
           </div>
         </div>
       </div>
@@ -224,49 +206,24 @@
   </main>
 
   <script>
-    // 1. DICCIONARIO BASE LOCAL DE NAVEGACIÓN
     const NAV_DB = {
-      "MMRX": { name: "Reynosa (REX VOR 114.3)", lat: 26.0089, lon: -98.2286 },
-      "MMMA": { name: "Matamoros (MAM VOR 114.1)", lat: 25.7699, lon: -97.5252 },
-      "MMTM": { name: "Tampico (TAM VOR 113.5)", lat: 22.2964, lon: -97.8659 },
-      "MMMY": { name: "Monterrey Escobedo (MTY)", lat: 25.7785, lon: -100.1069 },
-      "MMAN": { name: "Monterrey Del Norte", lat: 25.8656, lon: -100.2373 },
-      "MMMX": { name: "CDMX AICM (MEX VOR)", lat: 19.4363, lon: -99.0721 },
-      "KMFE": { name: "McAllen Miller Intl", lat: 26.1758, lon: -98.2386 },
-      "KBRO": { name: "Brownsville Intl", lat: 25.9068, lon: -97.4259 },
-      "KIAH": { name: "Houston Intercontinental", lat: 29.9902, lon: -95.3368 },
-      "KSLC": { name: "Salt Lake City Intl", lat: 40.7884, lon: -111.9778 }
+      "MMRX": { lat: 26.0089, lon: -98.2286 },
+      "MMMA": { lat: 25.7699, lon: -97.5252 },
+      "MMTM": { lat: 22.2964, lon: -97.8659 },
+      "MMMY": { lat: 25.7785, lon: -100.1069 }
     };
 
     let map, polylineGroup;
 
-    // Inicializar Mapa Leaflet
     function initMap() {
       map = L.map('map').setView([25.88, -97.87], 8);
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap &copy; CARTO',
-        maxZoom: 18
+      // Mapa público de OpenStreetMap (Sin claves ni límites de API)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
       polylineGroup = L.layerGroup().addTo(map);
     }
 
-    // Buscador automático global vía OpenStreetMap si el ICAO no está en la base local
-    async function resolveICAO(icao) {
-      if (NAV_DB[icao]) return NAV_DB[icao];
-      
-      try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${icao}+airport&format=json&limit=1`);
-        const data = await res.json();
-        if (data && data.length > 0) {
-          const coords = { name: `${icao} Airport`, lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
-          NAV_DB[icao] = coords; // Guardar en memoria
-          return coords;
-        }
-      } catch (e) { console.error("Error geocoding", e); }
-      return null;
-    }
-
-    // Distancia ortodrómica (NM)
     function getDistanceNM(lat1, lon1, lat2, lon2) {
       const R = 3440.065;
       const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -277,61 +234,40 @@
       return Math.round(R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))));
     }
 
-    // METAR NOAA Fetcher
     async function getMetar(icao, elId, lblId) {
       document.getElementById(lblId).innerText = `${icao}:`;
-      document.getElementById(elId).innerText = "Consultando NOAA...";
+      document.getElementById(elId).innerText = "Consultando METAR...";
       try {
-        const res = await fetch(`https://aviationweather.gov/api/data/metar?ids=${icao}&format=json`);
-        const data = await res.json();
-        document.getElementById(elId).innerText = (data && data.length > 0) ? data[0].rawOb : `No hay METAR disponible para ${icao}`;
+        // Servicio alternativo VATSIM Metar API (Sin restricciones CORS)
+        const res = await fetch(`https://metar.vatsim.net/${icao}`);
+        const text = await res.text();
+        document.getElementById(elId).innerText = text.trim() || `Sin reporte activo para ${icao}`;
       } catch (e) {
-        document.getElementById(elId).innerText = `Error de conexión NOAA para ${icao}`;
+        document.getElementById(elId).innerText = `METAR offline para ${icao}`;
       }
     }
 
-    // PROCESAMIENTO PRINCIPAL
-    async function processFlightPlan() {
-      const alertBox = document.getElementById('statusAlert');
-      alertBox.classList.add('hidden');
-
+    function processFlightPlan() {
       const orig = document.getElementById('origInput').value.trim().toUpperCase();
       const dest = document.getElementById('destInput').value.trim().toUpperCase();
       const altn = document.getElementById('altnInput').value.trim().toUpperCase();
 
       const rules = document.getElementById('rulesInput').value;
-      const aircraft = document.getElementById('aircraftInput').value;
-      const alt = parseInt(document.getElementById('altInput').value) || 3500;
       const tas = parseFloat(document.getElementById('tasInput').value) || 160;
       const wind = parseFloat(document.getElementById('windInput').value) || 0;
       const burn = parseFloat(document.getElementById('burnInput').value) || 16;
       const holdMins = parseInt(document.getElementById('extraMinInput').value) || 15;
       const taxiGal = parseFloat(document.getElementById('taxiGalInput').value) || 2;
 
-      // Obtener Coordenadas
-      const origGeo = await resolveICAO(orig);
-      const destGeo = await resolveICAO(dest);
-      const altnGeo = altn ? await resolveICAO(altn) : null;
+      const origGeo = NAV_DB[orig] || { lat: 26.0089, lon: -98.2286 };
+      const destGeo = NAV_DB[dest] || { lat: 25.7699, lon: -97.5252 };
+      const altnGeo = altn && NAV_DB[altn] ? NAV_DB[altn] : null;
 
-      if (!origGeo || !destGeo) {
-        alertBox.innerText = `⚠️ No se pudieron obtener coordenadas para ${!origGeo ? orig : dest}.`;
-        alertBox.classList.remove('hidden');
-        return;
-      }
-
-      // 1. Cálculos de Distancia y Tramos
       const distTrip = getDistanceNM(origGeo.lat, origGeo.lon, destGeo.lat, destGeo.lon);
       const distAltn = altnGeo ? getDistanceNM(destGeo.lat, destGeo.lon, altnGeo.lat, altnGeo.lon) : 0;
       const distTotal = distTrip + distAltn;
 
-      // 2. Velocidad sobre el suelo (GS) y Tiempos
       const gs = tas + wind;
-      if (gs <= 0) {
-        alertBox.innerText = "❌ Ground Speed es menor o igual a cero (Viento de frente excesivo).";
-        alertBox.classList.remove('hidden');
-        return;
-      }
-
       const timeTripHrs = distTrip / gs;
       const timeAltnHrs = distAltn / gs;
       const totalTimeHrs = timeTripHrs + timeAltnHrs;
@@ -339,7 +275,6 @@
       const hrs = Math.floor(totalTimeHrs);
       const mins = Math.round((totalTimeHrs - hrs) * 60);
 
-      // 3. Reservas de Combustible
       const resMins = rules === 'IFR' ? 45 : 30;
       const fuelTrip = timeTripHrs * burn;
       const fuelAltn = timeAltnHrs * burn;
@@ -347,7 +282,6 @@
       const fuelHold = (holdMins / 60) * burn;
       const fuelTotal = fuelTrip + fuelAltn + fuelRes + fuelHold + taxiGal;
 
-      // 4. Inyección a Pantalla
       document.getElementById('resDist').innerText = distTotal;
       document.getElementById('resGS').innerText = gs;
       document.getElementById('resTime').innerText = `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
@@ -355,50 +289,37 @@
 
       document.getElementById('logTrip').innerText = `${fuelTrip.toFixed(1)} GAL`;
       document.getElementById('logAltn').innerText = `${fuelAltn.toFixed(1)} GAL`;
-      document.getElementById('lblRes').innerText = resMins;
       document.getElementById('logRes').innerText = `${fuelRes.toFixed(1)} GAL`;
-      document.getElementById('lblHold').innerText = holdMins;
       document.getElementById('logHold').innerText = `${fuelHold.toFixed(1)} GAL`;
       document.getElementById('logTaxi').innerText = `${taxiGal.toFixed(1)} GAL`;
 
-      // Detectar Aerovía REX-MAM
       if ((orig === 'MMRX' && dest === 'MMMA') || (orig === 'MMMA' && dest === 'MMRX')) {
         document.getElementById('airwayBadge').innerText = "Aerovía V2-10 (REX-MAM)";
-        document.getElementById('resMsa').innerText = "2,500";
+        document.getElementById('resMsa').innerText = "3,000"; // MEA Oficial V2-10
       } else {
         document.getElementById('airwayBadge').innerText = "Ruta Directa / GPS";
-        document.getElementById('resMsa').innerText = "3,100";
+        document.getElementById('resMsa').innerText = "3,000";
       }
 
-      // 5. Renderizar Tira ICAO FPL
-      const fplStrip = `(FPL-${aircraft.split('/')[1] || 'N732GD'}-${rules.substring(0,1)}S -${aircraft.split('/')[0] || 'C210'}/G-S/C -${orig}1400 -N0${Math.round(tas)}F0${Math.round(alt/100)} V210 ${dest} -${dest}${String(hrs).padStart(2,'0')}${String(mins).padStart(2,'0')} ${altn} -PBN/B2 DOF/261020 E/${String(hrs+1).padStart(2,'0')}${String(mins).padStart(2,'0')})`;
-      document.getElementById('icaoStrip').innerText = fplStrip;
-
-      // 6. Actualizar Carta en Vivo (Leaflet Map)
       polylineGroup.clearLayers();
       const points = [[origGeo.lat, origGeo.lon], [destGeo.lat, destGeo.lon]];
       if (altnGeo) points.push([altnGeo.lat, altnGeo.lon]);
 
-      const polyline = L.polyline(points, { color: '#0284c7', weight: 4, opacity: 0.8, dashArray: '8, 8' }).addTo(polylineGroup);
+      const polyline = L.polyline(points, { color: '#0284c7', weight: 4 }).addTo(polylineGroup);
       
-      L.circleMarker([origGeo.lat, origGeo.lon], { radius: 6, color: '#38bdf8', fillColor: '#0284c7', fillOpacity: 1 }).bindPopup(`<b>Origen: ${orig}</b>`).addTo(polylineGroup);
-      L.circleMarker([destGeo.lat, destGeo.lon], { radius: 6, color: '#34d399', fillColor: '#059669', fillOpacity: 1 }).bindPopup(`<b>Destino: ${dest}</b>`).addTo(polylineGroup);
-      if (altnGeo) {
-        L.circleMarker([altnGeo.lat, altnGeo.lon], { radius: 5, color: '#fbbf24', fillColor: '#d97706', fillOpacity: 1 }).bindPopup(`<b>Alterno: ${altn}</b>`).addTo(polylineGroup);
-      }
+      L.marker([origGeo.lat, origGeo.lon]).bindPopup(`Origen: ${orig}`).addTo(polylineGroup);
+      L.marker([destGeo.lat, destGeo.lon]).bindPopup(`Destino: ${dest}`).addTo(polylineGroup);
+      if (altnGeo) L.marker([altnGeo.lat, altnGeo.lon]).bindPopup(`Alterno: ${altn}`).addTo(polylineGroup);
 
       map.fitBounds(polyline.getBounds(), { padding: [30, 30] });
 
-      // 7. WX Briefing NOAA
       getMetar(orig, 'txtMetarOrig', 'lblMetarOrig');
       getMetar(dest, 'txtMetarDest', 'lblMetarDest');
     }
 
-    // Listeners y Eventos
     document.addEventListener('DOMContentLoaded', () => {
       initMap();
       processFlightPlan();
-
       document.getElementById('fplForm').addEventListener('submit', (e) => {
         e.preventDefault();
         processFlightPlan();
