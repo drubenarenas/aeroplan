@@ -3,13 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AeroPlan v4.1 - Jeppesen EFB</title>
-
-  <!-- Tailwind CSS & FontAwesome -->
+  <title>AeroPlan v5.0 Modular EFB</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-  <!-- Leaflet.js -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -18,7 +14,7 @@
     .efb-card { background: rgba(15, 23, 42, 0.9); border: 1px solid #1e293b; border-radius: 0.75rem; }
     .input-efb { width: 100%; background: #090d16; border: 1px solid #334155; border-radius: 0.375rem; padding: 0.5rem; font-size: 0.875rem; font-family: monospace; color: #38bdf8; text-transform: uppercase; text-align: center; }
     .input-efb:focus { outline: none; border-color: #0284c7; box-shadow: 0 0 10px rgba(2, 132, 199, 0.4); }
-    #map { height: 320px; border-radius: 0.5rem; border: 1px solid #334155; }
+    #map { height: 340px; border-radius: 0.5rem; border: 1px solid #334155; }
   </style>
 </head>
 <body class="min-h-screen pb-12">
@@ -28,12 +24,12 @@
       <div class="flex items-center space-x-3">
         <i class="fa-solid fa-plane-departure text-sky-400 text-2xl"></i>
         <div>
-          <h1 class="text-lg font-bold tracking-widest text-white leading-none">AEROPLAN <span class="text-xs text-sky-400 font-mono">v4.1 PRO</span></h1>
-          <p class="text-[10px] text-slate-400 font-mono mt-0.5">JEPPESEN EFB & IFR DISPATCH SYSTEM</p>
+          <h1 class="text-lg font-bold tracking-widest text-white leading-none">AEROPLAN <span class="text-xs text-sky-400 font-mono">v5.0 MODULAR</span></h1>
+          <p class="text-[10px] text-slate-400 font-mono mt-0.5">NAVDB & AIRCRAFT ENGINE CONNECTED</p>
         </div>
       </div>
       <div class="flex space-x-4 text-xs font-mono">
-        <span class="text-emerald-400 flex items-center"><i class="fa-solid fa-map mr-1"></i> OSM Vector Map</span>
+        <span class="text-emerald-400 flex items-center"><i class="fa-solid fa-database mr-1"></i> NavDB Active</span>
         <span class="text-sky-400 flex items-center"><i class="fa-solid fa-cloud-bolt mr-1"></i> METAR Live</span>
       </div>
     </div>
@@ -41,29 +37,37 @@
 
   <main class="max-w-7xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-    <!-- FORMULARIO -->
+    <!-- PANEL DE CONFIGURACIÓN -->
     <section class="lg:col-span-4 space-y-5">
       <div class="efb-card p-5">
         <h2 class="text-xs font-bold text-sky-400 border-b border-slate-800 pb-2 mb-4 uppercase tracking-wider flex items-center justify-between">
-          <span><i class="fa-solid fa-sliders mr-2"></i> Configuración de Vuelo</span>
-          <span class="text-[10px] bg-sky-950 text-sky-300 px-2 py-0.5 rounded border border-sky-800">ICAO / FAA</span>
+          <span><i class="fa-solid fa-sliders mr-2"></i> Datos de Vuelo</span>
+          <span class="text-[10px] bg-sky-950 text-sky-300 px-2 py-0.5 rounded border border-sky-800">SENEAM / ICAO</span>
         </h2>
 
         <form id="fplForm" class="space-y-4">
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-[11px] font-mono text-slate-400 mb-1">Reglas de Vuelo</label>
+              <label class="block text-[11px] font-mono text-slate-400 mb-1">Reglas Vuelo</label>
               <select id="rulesInput" class="input-efb cursor-pointer">
                 <option value="IFR" selected>IFR (Reserva 45m)</option>
                 <option value="VFR">VFR Día (Reserva 30m)</option>
               </select>
             </div>
             <div>
-              <label class="block text-[11px] font-mono text-slate-400 mb-1">Aeronave / Reg</label>
-              <input type="text" id="aircraftInput" value="C210/N732GD" class="input-efb font-bold">
+              <label class="block text-[11px] font-mono text-slate-400 mb-1">Modelo Avión</label>
+              <select id="aircraftSelect" class="input-efb cursor-pointer font-bold text-amber-300">
+                <option value="C210" selected>C210 (Centurion)</option>
+                <option value="C182">C182 (Skylane)</option>
+                <option value="C172">C172 (Skyhawk)</option>
+                <option value="BE36">BE36 (Bonanza)</option>
+                <option value="PA28">PA28 (Cherokee)</option>
+                <option value="M20J">M20J (Mooney)</option>
+              </select>
             </div>
           </div>
 
+          <!-- RUTA -->
           <div class="grid grid-cols-3 gap-2">
             <div>
               <label class="block text-[11px] font-mono text-slate-400 mb-1">Origen</label>
@@ -75,10 +79,11 @@
             </div>
             <div>
               <label class="block text-[11px] font-mono text-slate-400 mb-1">Alterno (Opcional)</label>
-              <input type="text" id="altnInput" value="" maxlength="4" placeholder="Sin Alterno" class="input-efb font-bold text-amber-300">
+              <input type="text" id="altnInput" value="" maxlength="4" placeholder="Opcional" class="input-efb font-bold text-amber-300">
             </div>
           </div>
 
+          <!-- RENDIMIENTO DINÁMICO (Autocompletado desde aircraftDB.js) -->
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-[11px] font-mono text-slate-400 mb-1">Altitud (FT)</label>
@@ -86,7 +91,7 @@
             </div>
             <div>
               <label class="block text-[11px] font-mono text-slate-400 mb-1">Flujo (GPH)</label>
-              <input type="number" id="burnInput" value="16" step="0.5" class="input-efb text-amber-300">
+              <input type="number" id="burnInput" value="16.5" step="0.5" class="input-efb text-amber-300">
             </div>
           </div>
 
@@ -113,13 +118,13 @@
           </div>
 
           <button type="submit" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 rounded-lg transition uppercase tracking-wider text-xs">
-            <i class="fa-solid fa-calculator mr-2"></i> Computar FPL, Ruta & WX
+            <i class="fa-solid fa-calculator mr-2"></i> Computar FPL & Ruta
           </button>
         </form>
       </div>
     </section>
 
-    <!-- RESULTADOS -->
+    <!-- DASHBOARD Y MAPA -->
     <section class="lg:col-span-8 space-y-5">
 
       <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -136,59 +141,30 @@
           <span id="resTime" class="text-xl font-bold font-mono text-emerald-400">00:00</span> <span class="text-[10px] text-slate-500">HRS</span>
         </div>
         <div class="efb-card p-3 text-center border-t-2 border-t-amber-500">
-          <span class="text-[9px] font-mono text-slate-400 uppercase block">Comb. Mínimo</span>
+          <span class="text-[9px] font-mono text-slate-400 uppercase block">Comb. Total</span>
           <span id="resFuel" class="text-xl font-bold font-mono text-amber-400">0.0</span> <span class="text-[10px] text-slate-500">GAL</span>
         </div>
         <div class="efb-card p-3 text-center border-t-2 border-t-purple-500">
-          <span class="text-[9px] font-mono text-slate-400 uppercase block">MEA de Ruta</span>
-          <span id="resMsa" class="text-xl font-bold font-mono text-purple-400">3,000</span> <span class="text-[10px] text-slate-500">FT</span>
+          <span class="text-[9px] font-mono text-slate-400 uppercase block">Rumbo Inicial</span>
+          <span id="resCourse" class="text-xl font-bold font-mono text-purple-400">---°</span>
         </div>
       </div>
 
-      <!-- MAPA PÚBLICO OPENSTREETMAP (Sin API Key) -->
+      <!-- MAPA -->
       <div class="efb-card p-4">
         <div class="flex justify-between items-center mb-2">
           <h3 class="text-xs font-bold text-sky-400 uppercase font-mono flex items-center">
-            <i class="fa-solid fa-map-location-dot mr-2"></i> Carta de Ruta / Trayectoria
+            <i class="fa-solid fa-map-location-dot mr-2"></i> Carta Vectorial & Trazado de Ruta
           </h3>
-          <span id="airwayBadge" class="text-[10px] bg-slate-800 text-sky-300 font-mono px-2 py-0.5 rounded border border-slate-700">Aerovía V2-10</span>
+          <span id="airwayBadge" class="text-[10px] bg-slate-800 text-sky-300 font-mono px-2 py-0.5 rounded border border-slate-700">Ruta NavDB</span>
         </div>
         <div id="map"></div>
       </div>
 
-      <!-- DESGLOSE -->
-      <div class="efb-card p-4">
-        <h3 class="text-xs font-bold text-amber-400 uppercase font-mono mb-3 border-b border-slate-800 pb-2 flex items-center">
-          <i class="fa-solid fa-list-check mr-2"></i> Desglose de Combustible
-        </h3>
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-2 font-mono text-xs">
-          <div class="bg-slate-900 p-2 rounded border border-slate-800">
-            <span class="text-slate-500 text-[10px] block">TRIP</span>
-            <span id="logTrip" class="text-white font-bold">0.0 GAL</span>
-          </div>
-          <div class="bg-slate-900 p-2 rounded border border-slate-800">
-            <span class="text-slate-500 text-[10px] block">ALTN</span>
-            <span id="logAltn" class="text-white font-bold">0.0 GAL</span>
-          </div>
-          <div class="bg-slate-900 p-2 rounded border border-slate-800">
-            <span class="text-slate-500 text-[10px] block">RESERVA (45m)</span>
-            <span id="logRes" class="text-white font-bold">0.0 GAL</span>
-          </div>
-          <div class="bg-slate-900 p-2 rounded border border-slate-800">
-            <span class="text-slate-500 text-[10px] block">HOLD (15m)</span>
-            <span id="logHold" class="text-white font-bold">0.0 GAL</span>
-          </div>
-          <div class="bg-slate-900 p-2 rounded border border-slate-800">
-            <span class="text-slate-500 text-[10px] block">TAXI</span>
-            <span id="logTaxi" class="text-white font-bold">0.0 GAL</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- METAR CON PROXY LIBRE -->
+      <!-- METAR -->
       <div class="efb-card p-4">
         <h3 class="text-xs font-bold text-sky-400 uppercase font-mono mb-3 border-b border-slate-800 pb-2 flex items-center">
-          <i class="fa-solid fa-cloud-bolt mr-2"></i> Reportes METAR
+          <i class="fa-solid fa-cloud-bolt mr-2"></i> METAR Live (VATSIM API)
         </h3>
         <div class="space-y-2 font-mono text-xs">
           <div class="bg-slate-950 p-3 rounded border-l-2 border-l-sky-500">
@@ -205,40 +181,37 @@
     </section>
   </main>
 
-  <script>
-    const NAV_DB = {
-      "MMRX": { lat: 26.0089, lon: -98.2286 },
-      "MMMA": { lat: 25.7699, lon: -97.5252 },
-      "MMTM": { lat: 22.2964, lon: -97.8659 },
-      "MMMY": { lat: 25.7785, lon: -100.1069 }
-    };
+  <!-- 1. MÓDULOS DE DATOS (ORDEN CRÍTICO) -->
+  <script src="aircraftDB.js"></script>
+  <script src="navdb.js"></script>
 
+  <script src="rulesEngine.js"></script> <!-- Módulo nuevo -->
+  <script>
     let map, polylineGroup;
 
     function initMap() {
       map = L.map('map').setView([25.88, -97.87], 8);
-      // Mapa público de OpenStreetMap (Sin claves ni límites de API)
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
+      
+      // Esri Dark Gray Canvas (Sin API Key, libre y estilo EFB nocturno)
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+        maxZoom: 16
       }).addTo(map);
+
       polylineGroup = L.layerGroup().addTo(map);
     }
 
-    function getDistanceNM(lat1, lon1, lat2, lon2) {
-      const R = 3440.065;
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-                Math.sin(dLon/2) * Math.sin(dLon/2);
-      return Math.round(R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))));
-    }
+    // Actualizar parámetros automáticos cuando cambia la aeronave seleccionada
+    document.getElementById('aircraftSelect').addEventListener('change', (e) => {
+      const perf = getAircraftPerformance(e.target.value);
+      document.getElementById('tasInput').value = perf.cruiseTAS;
+      document.getElementById('burnInput').value = perf.fuelBurnGPH;
+      document.getElementById('taxiGalInput').value = perf.taxiFuelGal;
+    });
 
     async function getMetar(icao, elId, lblId) {
       document.getElementById(lblId).innerText = `${icao}:`;
-      document.getElementById(elId).innerText = "Consultando METAR...";
       try {
-        // Servicio alternativo VATSIM Metar API (Sin restricciones CORS)
         const res = await fetch(`https://metar.vatsim.net/${icao}`);
         const text = await res.text();
         document.getElementById(elId).innerText = text.trim() || `Sin reporte activo para ${icao}`;
@@ -259,20 +232,39 @@
       const holdMins = parseInt(document.getElementById('extraMinInput').value) || 15;
       const taxiGal = parseFloat(document.getElementById('taxiGalInput').value) || 2;
 
-      const origGeo = NAV_DB[orig] || { lat: 26.0089, lon: -98.2286 };
-      const destGeo = NAV_DB[dest] || { lat: 25.7699, lon: -97.5252 };
-      const altnGeo = altn && NAV_DB[altn] ? NAV_DB[altn] : null;
+      // Buscar puntos en navdb.js
+      const origPt = getWaypoint(orig);
+      const destPt = getWaypoint(dest);
+      const altnPt = getWaypoint(altn);
 
-      const distTrip = getDistanceNM(origGeo.lat, origGeo.lon, destGeo.lat, destGeo.lon);
-      const distAltn = altnGeo ? getDistanceNM(destGeo.lat, destGeo.lon, altnGeo.lat, altnGeo.lon) : 0;
+      if (!origPt || !destPt) {
+        alert(`Origen (${orig}) o Destino (${dest}) no existen en navdb.js.`);
+        return;
+      }
+
+      // Cálculos con funciones de navdb.js
+      const distTrip = calculateDistanceNM(origPt.lat, origPt.lon, destPt.lat, destPt.lon);
+      const distAltn = altnPt ? calculateDistanceNM(destPt.lat, destPt.lon, altnPt.lat, altnPt.lon) : 0;
       const distTotal = distTrip + distAltn;
 
+      const initialCourse = calculateBearing(origPt.lat, origPt.lon, destPt.lat, destPt.lon);
+
+      // Integración con rulesEngine.js
+      const routeData = RULES_ENGINE.getRouteMEA(orig, dest);
+      document.getElementById('airwayBadge').innerText = routeData.airway;
+
+      const alt = parseInt(document.getElementById('altInput').value) || 3000;
+      const altCheck = RULES_ENGINE.validateAltitude(initialCourse, alt, rules);
+      console.log(`Orientación: ${altCheck.direction} | ${altCheck.text}`);
+
+      // Cálculo de Tiempos y Velocidad
       const gs = tas + wind;
       const timeTripHrs = distTrip / gs;
       const timeAltnHrs = distAltn / gs;
       const totalTimeHrs = timeTripHrs + timeAltnHrs;
 
       const hrs = Math.floor(totalTimeHrs);
+      
       const mins = Math.round((totalTimeHrs - hrs) * 60);
 
       const resMins = rules === 'IFR' ? 45 : 30;
@@ -282,36 +274,45 @@
       const fuelHold = (holdMins / 60) * burn;
       const fuelTotal = fuelTrip + fuelAltn + fuelRes + fuelHold + taxiGal;
 
+      // Inyección a UI
       document.getElementById('resDist').innerText = distTotal;
       document.getElementById('resGS').innerText = gs;
       document.getElementById('resTime').innerText = `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
       document.getElementById('resFuel').innerText = fuelTotal.toFixed(1);
+      document.getElementById('resCourse').innerText = `${initialCourse}°`;
 
-      document.getElementById('logTrip').innerText = `${fuelTrip.toFixed(1)} GAL`;
-      document.getElementById('logAltn').innerText = `${fuelAltn.toFixed(1)} GAL`;
-      document.getElementById('logRes').innerText = `${fuelRes.toFixed(1)} GAL`;
-      document.getElementById('logHold').innerText = `${fuelHold.toFixed(1)} GAL`;
-      document.getElementById('logTaxi').innerText = `${taxiGal.toFixed(1)} GAL`;
+      // Renderizar Mapa (Ruta Principal Cyan + Alterno Punteado Ámbar)
+      polylineGroup.clearLayers();
 
-      if ((orig === 'MMRX' && dest === 'MMMA') || (orig === 'MMMA' && dest === 'MMRX')) {
-        document.getElementById('airwayBadge').innerText = "Aerovía V2-10 (REX-MAM)";
-        document.getElementById('resMsa').innerText = "3,000"; // MEA Oficial V2-10
-      } else {
-        document.getElementById('airwayBadge').innerText = "Ruta Directa / GPS";
-        document.getElementById('resMsa').innerText = "3,000";
+      const mainRoutePoints = [[origPt.lat, origPt.lon], [destPt.lat, destPt.lon]];
+      L.polyline(mainRoutePoints, { color: '#38bdf8', weight: 4 }).addTo(polylineGroup);
+
+      L.marker([origPt.lat, origPt.lon])
+        .bindPopup(`<b>${origPt.name}</b><br>VOR: ${origPt.vor} (${origPt.freq})`)
+        .addTo(polylineGroup);
+
+      L.marker([destPt.lat, destPt.lon])
+        .bindPopup(`<b>${destPt.name}</b><br>VOR: ${destPt.vor} (${destPt.freq})`)
+        .addTo(polylineGroup);
+
+      const boundsPoints = [...mainRoutePoints];
+
+      if (altnPt) {
+        const altnRoutePoints = [[destPt.lat, destPt.lon], [altnPt.lat, altnPt.lon]];
+        L.polyline(altnRoutePoints, { 
+          color: '#f59e0b', 
+          weight: 3, 
+          dashArray: '6, 8' 
+        }).addTo(polylineGroup);
+
+        L.marker([altnPt.lat, altnPt.lon])
+          .bindPopup(`<b>${altnPt.name}</b><br>Aeropuerto Alterno`)
+          .addTo(polylineGroup);
+
+        boundsPoints.push([altnPt.lat, altnPt.lon]);
       }
 
-      polylineGroup.clearLayers();
-      const points = [[origGeo.lat, origGeo.lon], [destGeo.lat, destGeo.lon]];
-      if (altnGeo) points.push([altnGeo.lat, altnGeo.lon]);
-
-      const polyline = L.polyline(points, { color: '#0284c7', weight: 4 }).addTo(polylineGroup);
-      
-      L.marker([origGeo.lat, origGeo.lon]).bindPopup(`Origen: ${orig}`).addTo(polylineGroup);
-      L.marker([destGeo.lat, destGeo.lon]).bindPopup(`Destino: ${dest}`).addTo(polylineGroup);
-      if (altnGeo) L.marker([altnGeo.lat, altnGeo.lon]).bindPopup(`Alterno: ${altn}`).addTo(polylineGroup);
-
-      map.fitBounds(polyline.getBounds(), { padding: [30, 30] });
+      map.fitBounds(L.polyline(boundsPoints).getBounds(), { padding: [30, 30] });
 
       getMetar(orig, 'txtMetarOrig', 'lblMetarOrig');
       getMetar(dest, 'txtMetarDest', 'lblMetarDest');
